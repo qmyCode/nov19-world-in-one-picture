@@ -1,45 +1,38 @@
 #!/usr/bin/env python3
-"""Entrypoint for the news-image-20261119 entry (v4).
+"""main.py - entrypoint for the 19 November 2026 news-image entry (v5).
 
-The picture itself is committed next to this file as ``entry.png``.
-At run time this program only has to deliver that picture: it checks
-the file really is a PNG and no larger than the 1 MiB the competition
-allows, then copies it, byte for byte, to ``/output/entry.png``.
-
-Standard library only. The drawing program (``draw.py``) is a build
-tool and is never imported or run here.
+Stdlib-only copier: validates the committed entry.png (PNG signature,
+size <= 1 MiB) and copies it to /output/entry.png. draw.py is the build
+tool that produced entry.png; it is never imported here.
 """
-
 import os
 import shutil
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-SOURCE = os.path.join(HERE, "entry.png")
-TARGET = os.path.join("/output", "entry.png")
-MAX_BYTES = 1024 * 1024  # 1 MiB cap from the competition rules
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+MAX_BYTES = 1024 * 1024  # 1 MiB
 
 
 def main() -> int:
-    if not os.path.isfile(SOURCE):
-        print(f"missing entry picture: {SOURCE}", file=sys.stderr)
+    here = os.path.dirname(os.path.abspath(__file__))
+    src = os.path.join(here, "entry.png")
+    with open(src, "rb") as fh:
+        data = fh.read()
+    if not data.startswith(PNG_SIGNATURE):
+        print("entry.png: bad PNG signature", file=sys.stderr)
         return 1
-
-    size = os.path.getsize(SOURCE)
-    if size > MAX_BYTES:
-        print(f"entry.png is {size} bytes, over the 1 MiB cap", file=sys.stderr)
+    if len(data) > MAX_BYTES:
+        print("entry.png: exceeds 1 MiB cap", file=sys.stderr)
         return 1
-
-    with open(SOURCE, "rb") as fh:
-        head = fh.read(len(PNG_SIGNATURE))
-    if head != PNG_SIGNATURE:
-        print("entry.png does not start with a PNG signature", file=sys.stderr)
+    out_dir = "/output"
+    os.makedirs(out_dir, exist_ok=True)
+    dst = os.path.join(out_dir, "entry.png")
+    with open(dst, "wb") as fh:
+        fh.write(data)
+    if os.path.getsize(dst) != len(data):
+        print("entry.png: copy size mismatch", file=sys.stderr)
         return 1
-
-    os.makedirs(os.path.dirname(TARGET), exist_ok=True)
-    shutil.copyfile(SOURCE, TARGET)
-    print(f"entry.png delivered: {size} bytes -> {TARGET}")
+    print("entry.png delivered: %d bytes -> %s" % (len(data), dst))
     return 0
 
 
