@@ -5,7 +5,7 @@
 [![reward](https://make.fun/badge/news-image-20261119/qmyCode/nov19-world-in-one-picture/reward.svg)](https://make.fun/bounty/news-image-20261119?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261119)
 
 One 1024×1024 newspaper front page summing up the world's news of Thursday
-19 November 2026 — v3: 42 stories from six continents in a strict grid of
+19 November 2026 — v4: 42 stories from six continents in a strict grid of
 15 illustrated mains (3 large scene panels: the Shenzhen Trump–Xi–Putin
 trilateral, Jeffries nominated for US House Speaker, Europe's €45bn
 Ukraine loan drafted in Berlin — plus 12 medium mains, each with a

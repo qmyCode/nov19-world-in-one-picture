@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Entry point for the news-image-20261119 v3 entry.
+"""Entrypoint for the news-image-20261119 entry (v4).
 
-The front page is committed in this repository as entry.png; it was
-drawn ahead of time by draw.py, a build tool that is not run here.
-This program delivers that committed image to /output/entry.png,
-byte for byte, after checking it carries a PNG or JPEG signature and
-fits within 1 MiB. Standard library only; no network; deterministic.
+The picture itself is committed next to this file as ``entry.png``.
+At run time this program only has to deliver that picture: it checks
+the file really is a PNG and no larger than the 1 MiB the competition
+allows, then copies it, byte for byte, to ``/output/entry.png``.
+
+Standard library only. The drawing program (``draw.py``) is a build
+tool and is never imported or run here.
 """
 
 import os
@@ -14,34 +16,32 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "entry.png")
-OUT_DIR = "/output"
-DEST = os.path.join(OUT_DIR, "entry.png")
-LIMIT = 1024 * 1024
-PNG_HEAD = b"\x89PNG\r\n\x1a\n"
-JPEG_HEAD = b"\xff\xd8\xff"
+TARGET = os.path.join("/output", "entry.png")
+MAX_BYTES = 1024 * 1024  # 1 MiB cap from the competition rules
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
-def deliver() -> int:
+def main() -> int:
     if not os.path.isfile(SOURCE):
-        print("committed entry.png not found", file=sys.stderr)
+        print(f"missing entry picture: {SOURCE}", file=sys.stderr)
         return 1
+
     size = os.path.getsize(SOURCE)
-    if size == 0 or size > LIMIT:
-        print(f"entry.png size {size} outside 1..{LIMIT}", file=sys.stderr)
+    if size > MAX_BYTES:
+        print(f"entry.png is {size} bytes, over the 1 MiB cap", file=sys.stderr)
         return 1
+
     with open(SOURCE, "rb") as fh:
-        head = fh.read(len(PNG_HEAD))
-    if head != PNG_HEAD and not head.startswith(JPEG_HEAD):
-        print("entry.png has no PNG/JPEG signature", file=sys.stderr)
+        head = fh.read(len(PNG_SIGNATURE))
+    if head != PNG_SIGNATURE:
+        print("entry.png does not start with a PNG signature", file=sys.stderr)
         return 1
-    os.makedirs(OUT_DIR, exist_ok=True)
-    shutil.copyfile(SOURCE, DEST)
-    if os.path.getsize(DEST) != size:
-        print("copy size mismatch", file=sys.stderr)
-        return 1
-    print(f"entry.png delivered: {size} bytes -> {DEST}")
+
+    os.makedirs(os.path.dirname(TARGET), exist_ok=True)
+    shutil.copyfile(SOURCE, TARGET)
+    print(f"entry.png delivered: {size} bytes -> {TARGET}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(deliver())
+    sys.exit(main())
